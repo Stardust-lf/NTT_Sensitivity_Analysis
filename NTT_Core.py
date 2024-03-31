@@ -4,33 +4,35 @@ from sympy.utilities.misc import as_int
 from sympy.ntheory import isprime, primitive_root
 import random
 
+
 class RandomFlipper:
-    def __init__(self, rand_prob = 0.1):
+    def __init__(self, rand_prob=0.1):
         self.flips = 0
         self.prob = rand_prob
+
     def flip_random_bit(self, n):
         binary = bin(n)[2:]
         index = random.randint(0, len(binary) - 1)
+        flipped = binary[:index] + ('0' if binary[index] == '1' else '1') + binary[index + 1:]
+        # print("{} --> {}".format(binary, flipped))
+
+        self.flips += 1
+        return int(flipped, 2)
+
+    def flip_chosen_bit(self, n, bit_pos):
+        assert bit_pos > 0
+
+        binary = bin(n)[2:].zfill(bit_pos + 1)
+        index = -bit_pos
         flipped = binary[:index] + ('0' if binary[index] == '1' else '1') + binary[index + 1:]
         #print("{} --> {}".format(binary, flipped))
 
         self.flips += 1
         return int(flipped, 2)
 
-    def flip_chosen_bit(self, n, bit_pos):
-        assert bit_pos>0
-
-        binary = bin(n)[2:].zfill(bit_pos + 1)
-        index = -bit_pos
-        flipped = binary[:index] + ('0' if binary[index] == '1' else '1') + binary[index + 1:]
-        print("{} --> {}".format(binary, flipped))
-
-        self.flips += 1
-        return int(flipped, 2)
-
     def randomize(self, n):
         if random.random() < self.prob:
-            #print("---Error Flip Occurs---")
+            # print("---Error Flip Occurs---")
             return self.flip_random_bit(n)
         else:
             return n
@@ -183,7 +185,8 @@ def randomized_ntt(seq, prime, inverse=False, rand_prob=0.1, log=True):
         print("--------------------------------------------------------------------------------")
     return a
 
-def flip_index_ntt(seq, prime, flip_pos, flip_opt_time, inverse=False , log=True):
+
+def flip_index_ntt(seq, prime, flip_pos, flip_opt_time, inverse=False, log=True):
     assert flip_opt_time >= 1
     flipper = RandomFlipper()
     """Utility function for the Number Theoretic Transform"""
@@ -241,9 +244,9 @@ def flip_index_ntt(seq, prime, flip_pos, flip_opt_time, inverse=False , log=True
                     "Operating a{} = (a{} + a{}w{})mod p = {}".format((i + j), (i + j), (i + j + hf), (ut * j),
                                                                       a[i + j]))
                 if flip_opt_time == 1:
-                    print("Previous",a[i+j])
-                    a[i + j] = flipper.flip_chosen_bit(a[i + j],flip_pos)
-                    print("After",a[i+j])
+                    print("Previous", a[i + j])
+                    a[i + j] = flipper.flip_chosen_bit(a[i + j], flip_pos)
+                    print("After", a[i + j])
 
                 flip_opt_time -= 1
                 a[i + j + hf] = (u - v) % p
